@@ -21,7 +21,7 @@ class Item{
     //'preco' :  preco,
     'url' :  urlAvatar,
     'descricao' :  descricao,
-    //'quatidade' :  quantidade,
+    'quatidade' :  quantidade,
   };
 
   static Item fromJson(Map<String, dynamic> json) => Item(
@@ -30,6 +30,7 @@ class Item{
       preco: json['preco'] as double,
       urlAvatar: json['url'],
       descricao: json['descricao'],
-     // quantidade: json['quantidade'],
+      //quantidade: int.parse(json['quantidade']),
   );
+
 }

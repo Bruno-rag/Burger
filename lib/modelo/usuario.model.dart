@@ -1,12 +1,25 @@
-class Usuario{
-  final String? nome;
-  final String? sobrenome;
-  final String? genero;
-  final String? fone;
-  final String? email;
-  final String? senha;
-  final String? cep;
-  final String? data;
+class User{
 
-  Usuario({this.nome,this.sobrenome,this.genero,this.fone,this.cep,this.data,this.email,this.senha});
+  late final String nome;
+  late final String sobrenome;
+  final String email;
+
+
+  User({
+    required this.nome,
+    required this.sobrenome,
+    required this.email,
+  });
+  Map<String, dynamic> toJson() => {
+    'nome' :  nome,
+    'Sobrenome' :  sobrenome,
+    'email' :  email,
+
+  };
+  static User fromJson(Map<String, dynamic> json) => User(
+    nome: json['nome'],
+    sobrenome: json['Sobrenome'],
+    email: json['email'],
+
+  );
 }

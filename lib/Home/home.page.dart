@@ -316,25 +316,10 @@ class HomePage extends StatelessWidget {
                 ),
               ],
             ),
-
           ),
-
-
         ],
       ),
 
     );
-
-  }
-  Future createUser({required String nome}) async{
-    final docUser = FirebaseFirestore.instance.collection('users').doc('my-id');
-
-    final json = {
-      'nome': 'Teste33',
-      'age': 21,
-      'birthday': DateTime(2001, 7, 28),
-
-    };
-    await docUser.set(json);
   }
 }

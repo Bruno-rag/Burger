@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
+import 'package:testefirebase/Home/criaHamburger.page.dart';
+import 'package:testefirebase/repository/carrinho.repository.dart';
 
 import '../../repository/Repository.control.dart';
+import 'modelo/item.model.dart';
+
 
 class MontePage extends StatefulWidget {
   const MontePage({Key? key}) : super(key: key);
@@ -12,8 +16,10 @@ class MontePage extends StatefulWidget {
 }
 
 class _MontePageState extends State<MontePage> {
+  late CarrinhoRepository itens;
   @override
   Widget build(BuildContext context) {
+    itens = Provider.of<CarrinhoRepository>(context);
     return Scaffold(
       body: Container(
         color: Colors.white10,
@@ -23,16 +29,23 @@ class _MontePageState extends State<MontePage> {
             Expanded(
               child: Container(
                 padding: EdgeInsets.all(20),
-                child: Consumer<Repository>(
-                    builder: (context, value, child) {
-                      return value.listaBurger.isEmpty ? Text(
-                        "Lista vazia",
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 20,
-                        ),
-                      )
-                      : ListView.builder(
+                child: Expanded(
+                        child: StreamBuilder<List<Item>>(
+                          stream: readUsers(),
+                          builder: (context, snapshot){
+                            if(snapshot.hasError){
+                              return Text("Error: ${snapshot.error}");
+                            } else if(snapshot.hasData){
+                              final users = snapshot.data!;
+                              return ListView(
+                                children: users.map(buildUser).toList(),
+                              );
+                            }else{
+                              return Center(child: CircularProgressIndicator(),);
+                            }
+                        },
+                      )),
+                      /*ListView.builder(
                           itemCount: value.listaBurger.length,
                           itemBuilder: (context, index) => Card(
                             child: ListTile(
@@ -51,8 +64,8 @@ class _MontePageState extends State<MontePage> {
                               },
                             ),
                           )
-                      );
-                    }),
+                      );*/
+
               ),
             ),
             SizedBox(
@@ -73,9 +86,9 @@ class _MontePageState extends State<MontePage> {
                 ),
                 onPressed: () {
 
-                 /* Navigator.of(context).push<int>(MaterialPageRoute(
+                  Navigator.of(context).push<int>(MaterialPageRoute(
                   builder: (_) => CriaHamburgerPage(),
-                  ),);*/
+                  ),);
                 },
               ),
             ),
@@ -83,5 +96,46 @@ class _MontePageState extends State<MontePage> {
         ),
       ),
     );
+  }
+
+  Widget buildUser(Item item) {
+    return Card(
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundImage: NetworkImage(item.urlAvatar),
+        ),
+        title: Text(
+          item.nome,
+          style: TextStyle(
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        subtitle: Text(
+          "R\$ " + item.preco!.toStringAsFixed(2),
+          style: TextStyle(
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.bold,
+
+          ),
+        ),
+        trailing:  IconButton(
+            onPressed: () {
+              removeItem(item);
+            },
+            icon: Icon(Icons.delete)
+        ),
+      ),
+    );}
+
+
+  Stream<List<Item>> readUsers() => FirebaseFirestore.instance
+      .collection('usuarios/${itens.auth.usuario!.uid}/ListaBurger')
+      .snapshots()
+      .map((snapshot) =>
+      snapshot.docs.map((doc)=> Item.fromJson(doc.data())).toList());
+
+  Future removeItem(Item item)async{
+    final db = FirebaseFirestore.instance.collection('usuarios/${itens.auth.usuario!.uid}/ListaBurger');
+    await db.doc(item.nome).delete();
   }
 }

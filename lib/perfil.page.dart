@@ -1,7 +1,9 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testefirebase/pix.page.dart';
+import 'package:testefirebase/repository/carrinho.repository.dart';
 
 import '../services/auth.service.dart';
 
@@ -13,9 +15,11 @@ class PerfilPage extends StatefulWidget {
 }
 
 class _PerfilPageState extends State<PerfilPage> {
+  late CarrinhoRepository itens;
+
   @override
   Widget build(BuildContext context) {
-
+    itens = Provider.of<CarrinhoRepository>(context);
     return Container(
       child:
       Scaffold(
@@ -23,25 +27,27 @@ class _PerfilPageState extends State<PerfilPage> {
           padding: EdgeInsets.only(top: 8, left: 10, right: 10),
           child: Column(
             children: [
-              SizedBox(
-                height: 10,
-              ),
-              CircleAvatar(
-                backgroundImage: NetworkImage(
-                    "https://media.istockphoto.com/photos/thug-life-meme-glasses-pixel-art-modern-iconic-3d-object-picture-id1310981636?b=1&k=20&m=1310981636&s=170667a&w=0&h=GjiqcTE4iPguJP0m8xKdq4Hq2kcstcGJVVk8mRPv4qg="),
-                backgroundColor: Colors.deepPurpleAccent,
-                foregroundColor: Colors.deepPurpleAccent,
-                radius: 120,
-
-              ),
-              SizedBox(
-                  height: 5),
-              Text(
-                "NomeUsuario",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.perm_identity,
+                      size: 40,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      "nome",
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(

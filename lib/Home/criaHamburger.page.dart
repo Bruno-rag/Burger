@@ -1,11 +1,12 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../carrinho.page.dart';
 import '../modelo/item.model.dart';
 import '../repository/Repository.control.dart';
-
+import '../repository/carrinho.repository.dart';
 
 
 class CriaHamburgerPage extends StatefulWidget {
@@ -16,10 +17,11 @@ class CriaHamburgerPage extends StatefulWidget {
 
 class _CriaHamburgerPageState extends State<CriaHamburgerPage> {
   String nome = "";
-
+  late CarrinhoRepository itens;
 
   @override
   Widget build(BuildContext context) {
+    itens = Provider.of<CarrinhoRepository>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -127,16 +129,18 @@ class _CriaHamburgerPageState extends State<CriaHamburgerPage> {
                         nome
                         valueIngre.criarDescricao();
                         valueIngre.valorTotalIngre();*/
-                        Item item =  Item(
+                        /*Item item =  Item(
                             nome: nome,
                             preco: valueIngre.valorTotalIngre(),
                             urlAvatar: "https://c.pxhere.com/photos/13/fa/beef_bread_bun_burger_cheese_cheeseburger_close_up_delicious-1556149.jpg!d",
                             descricao: valueIngre.criarDescricao(),
                             quantidade: 1,
-                        );
+                        );*/
 
-                        valueIngre.itemAdd(item);
-                        valueIngre.addBurger(item);
+                        //valueIngre.itemAdd(item);
+                        //valueIngre.addBurger(item);
+
+                        createUser(valueIngre.valorTotalIngre());
                         Navigator.of(context).pop();
                         Navigator.of(context).push<int>(MaterialPageRoute(
                           builder: (_) => CarrinhoPage(),
@@ -152,6 +156,23 @@ class _CriaHamburgerPageState extends State<CriaHamburgerPage> {
       )
     );
 
+  }
+
+  Future createUser(double preco) async{
+
+    final docCar = FirebaseFirestore.instance.collection('usuarios/${itens.auth.usuario!.uid}/carrinho').doc(nome);
+    final doclist = FirebaseFirestore.instance.collection('usuarios/${itens.auth.usuario!.uid}/ListaBurger').doc(nome);
+
+    final json = {
+      "id": nome,
+      'nome': nome,
+      'preco': preco,
+      'url': "https://c.pxhere.com/photos/13/fa/beef_bread_bun_burger_cheese_cheeseburger_close_up_delicious-1556149.jpg!d",
+      'descricao': "",
+      'quatidade': 1,
+    };
+    await docCar.set(json);
+    await doclist.set(json);
   }
 
 }

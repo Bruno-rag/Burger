@@ -8,18 +8,22 @@ import '../../repository/carrinho.repository.dart';
 
 class CarrinhoPage extends StatefulWidget {
   const CarrinhoPage({Key? key,}) : super(key: key,);
+
   @override
   State<CarrinhoPage> createState() => _CarrinhoPageState();
 }
 class _CarrinhoPageState extends State<CarrinhoPage> {
   late CarrinhoRepository itens;
+  late double total = 0;
+
   @override
   Widget build(BuildContext context){
     itens = Provider.of<CarrinhoRepository>(context);
+    total = 0;
     return Container(
+
     child: Scaffold(
       appBar: AppBar(
-
         title: Text(
             "Carrinho de compras"
         ),
@@ -37,16 +41,26 @@ class _CarrinhoPageState extends State<CarrinhoPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            padding: EdgeInsets.all(20),
-            child: Text(
-              "Lista ",
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
+          Row(
+            children: [
+              Container(
+
+                padding: EdgeInsets.all(20),
+                child: Icon(
+                  Icons.add_shopping_cart,
+                  size: 40,
+
+                ),
               ),
-            ),
+              SizedBox(width: 10,),
+              Text(
+                "Carrinho",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 25
+                ),
+              ),
+            ],
           ),
           //Lista de item
           Expanded(
@@ -64,7 +78,7 @@ class _CarrinhoPageState extends State<CarrinhoPage> {
                   return Center(child: CircularProgressIndicator(),);
                 }
               },
-            )
+            ),
 
             /*child: Consumer<CarrinhoRepository>(
               builder: (context, value, child) {
@@ -107,61 +121,57 @@ class _CarrinhoPageState extends State<CarrinhoPage> {
                 );
               }),*/
           ),
-
           // Barra inferior carrinho
-          Consumer<Repository>(
-            builder: (context, value, child){
-              return  Container(
-                height: 150,
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-                // Barra inferior carrinho
-                child: Column(
-                  children: [
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 1.5,
-                      color: Colors.black,
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    // preço total
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        //Total
-                        Text(
-                          "Total",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+          Container(
+              height: 150,
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+              ),
+              // Barra inferior carrinho
+              child: Column(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 1.5,
+                    color: Colors.black,
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  // preço total
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      //Total
+                      Text(
+                        "Total",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
 
+                      ),
+                      SizedBox(
+                        width: 50,
+                      ),
+                      Text(
+                        "R\$ "+ total.toStringAsFixed(2),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                        SizedBox(
-                          width: 50,
-                        ),
-                        Text(
-                          "R\$ "+ value.valorTotal().toStringAsFixed(2),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    //Botão de comprar
-                  ],
-                ),
-              );
-            },
-          ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  //Botão de comprar
+                ],
+              ),
+            ),
+
           Consumer<Repository>(
             builder: (context, value, child) {
               return Container(
@@ -195,28 +205,45 @@ class _CarrinhoPageState extends State<CarrinhoPage> {
 
   );}
 
-  Widget buildUser(Item item) => ListTile(
-    leading: CircleAvatar(
-      backgroundImage: NetworkImage(item.urlAvatar),
-    ),
-    title: Text(
-      item.nome,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
+  Widget buildUser(Item item) {
+      total += item.preco!;
+    return Card(
+    child: ListTile(
+      leading: CircleAvatar(
+        backgroundImage: NetworkImage(item.urlAvatar),
+      ),
+      title: Text(
+        item.nome,
+        style: TextStyle(
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      subtitle: Text(
+        "R\$ " + item.preco!.toStringAsFixed(2),
+        style: TextStyle(
+          color: Colors.deepPurple,
+          fontWeight: FontWeight.bold,
+
+        ),
+      ),
+      trailing:  IconButton(
+          onPressed: () {
+            removeItem(item);
+          },
+          icon: Icon(Icons.delete)
       ),
     ),
-    subtitle: Text(
-      "R\$ " + item.preco!.toStringAsFixed(2),
-      style: TextStyle(
-        color: Colors.deepPurple,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  );
+  );}
+
 
   Stream<List<Item>> readUsers() => FirebaseFirestore.instance
       .collection('usuarios/${itens.auth.usuario!.uid}/carrinho')
       .snapshots()
       .map((snapshot) =>
       snapshot.docs.map((doc)=> Item.fromJson(doc.data())).toList());
+
+  Future removeItem(Item item)async{
+    final db = FirebaseFirestore.instance.collection('usuarios/${itens.auth.usuario!.uid}/carrinho');
+    await db.doc(item.nome).delete();
+  }
 }

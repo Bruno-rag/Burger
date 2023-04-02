@@ -1,8 +1,10 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/auth.service.dart';
+import '../repository/carrinho.repository.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -12,9 +14,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  late CarrinhoRepository itens;
   final formKey = GlobalKey<FormState>();
   final email = TextEditingController();
   final senha = TextEditingController();
+  final nome = TextEditingController();
+  final sobrenome = TextEditingController();
 
   bool isLogin = true;
   late String titulo;
@@ -32,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       isLogin = acao;
       if (isLogin) {
-        titulo = 'Bem vindo';
+        titulo = 'Login';
         actionButton = 'Login';
         toggleButton = 'Ainda não tem conta? Cadastre-se agora.';
       } else {
@@ -42,143 +47,202 @@ class _LoginPageState extends State<LoginPage> {
       }
     });
   }
-
   login() async {
     setState(() => loading = true);
     try {
       await context.read<AuthService>().login(email.text, senha.text);
+
     } on AuthException catch (e) {
       setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
-
   registrar() async {
     setState(() => loading = true);
     try {
       await context.read<AuthService>().registrar(email.text, senha.text);
+      createUser(nome.text,sobrenome.text);
     } on AuthException catch (e) {
       setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-    }
-  }
-
-  String? _validarEmail(String value) {
-    String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regExp = new RegExp(pattern);
-    if (value.length == 0) {
-      return "Informe o Email";
-    } else if(!regExp.hasMatch(value)){
-      return "Email inválido";
-    }else {
-      return null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    itens = Provider.of<CarrinhoRepository>(context);
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 100),
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    fontSize: 35,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -1.5,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: TextFormField(
-                    controller: email,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Email',
+      body: ListView(
+        children: [
+          isLogin == true ?
+          Container(
+            padding: EdgeInsets.only(
+                top: 60,
+            ),
+            child: SizedBox(
+              width: 128,
+              height: 128,
+              child: Image.asset("assets/burger.png"),
+            ),
+          ) :SizedBox(
+
+            height: 20,
+
+          ),
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 40),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      titulo,
+                      style: const TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -1.5,
+                      ),
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Informe o email corretamente!';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-                  child: TextFormField(
-                    controller: senha,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Senha',
-                    ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Informa sua senha!';
-                      } else if (value.length < 6) {
-                        return 'Sua senha deve ter no mínimo 6 caracteres';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        if (isLogin) {
-                          login();
-                        } else {
-                          registrar();
-                        }
-                      }
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: (loading)
-                          ? [
-                        const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                      ]
-                          : [
-                        const Icon(Icons.check),
+                    isLogin == false ?
+                    Column(
+                      children: [
                         Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            actionButton,
-                            style: const TextStyle(fontSize: 20),
+                          padding: const EdgeInsets.all(24),
+                          child: TextFormField(
+                            controller: nome,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Nome',
+                            ),
+                            keyboardType: TextInputType.text,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Informe o nome corretamente!';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: TextFormField(
+                            controller: sobrenome,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Sobrenome',
+                            ),
+                            keyboardType: TextInputType.text,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Informe o sobrenome corretamente!';
+                              }
+                              return null;
+                            },
                           ),
                         ),
                       ],
+                    ) :SizedBox(),
+                    //email
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: TextFormField(
+                        controller: email,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Email',
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Informe o email corretamente!';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                  ),
+                    //senha
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+                      child: TextFormField(
+                        controller: senha,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Senha',
+                        ),
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Informa sua senha!';
+                          } else if (value.length < 6) {
+                            return 'Sua senha deve ter no mínimo 6 caracteres';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            if (isLogin) {
+                              login();
+                            } else {
+                              registrar();
+                            }
+                          }
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: (loading)
+                              ? [
+                            const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                          ]
+                              : [
+                            const Icon(Icons.check),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(
+                                actionButton,
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => setFormAction(!isLogin),
+                      child: Text(toggleButton),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => setFormAction(!isLogin),
-                  child: Text(toggleButton),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
+  }
+  Future createUser(String nome, String sobrenome) async{
+
+    final db = FirebaseFirestore.instance.collection('usuarios/${itens.auth.usuario!.uid}/info').doc('Info');
+
+    final json = {
+      'nome': nome,
+      'url': sobrenome,
+    };
+    await db.set(json);
   }
 }

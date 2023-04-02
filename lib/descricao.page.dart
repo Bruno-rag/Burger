@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
 import 'package:testefirebase/repository/carrinho.repository.dart';
-
-import '../../dataBases/db.firestore.dart';
 import 'carrinho.page.dart';
 import 'modelo/item.model.dart';
 

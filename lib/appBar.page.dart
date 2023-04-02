@@ -1,19 +1,29 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testefirebase/monte.page.dart';
 import 'package:testefirebase/perfil.page.dart';
+import 'package:testefirebase/Home/home.page.dart';
+import 'package:testefirebase/repository/carrinho.repository.dart';
 import '../services/auth.service.dart';
 import 'carrinho.page.dart';
-import 'Home/home.page.dart';
+
+
 
 class AppBarPage extends StatefulWidget {
   @override
   _AppBarPageState createState() => _AppBarPageState();
 }
 class _AppBarPageState extends State<AppBarPage> {
+  late CarrinhoRepository itens;
+  @override
+  void initState() {
+    super.initState();
+
+  }
   @override
   Widget build(BuildContext context) {
-    AuthService auth = Provider.of<AuthService>(context);
+    itens = Provider.of<CarrinhoRepository>(context);
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -24,6 +34,7 @@ class _AppBarPageState extends State<AppBarPage> {
               icon: Icon(Icons.add_shopping_cart),
               iconSize: 25,
               onPressed: () {
+                createUser();
                 Navigator.of(context).push<int>(MaterialPageRoute(
                   builder: (_) => CarrinhoPage(),
                 ),);
@@ -57,7 +68,6 @@ class _AppBarPageState extends State<AppBarPage> {
             HomePage(),
             MontePage(),
             PerfilPage(),
-
           ],
         ),
       ),
@@ -70,5 +80,15 @@ class _AppBarPageState extends State<AppBarPage> {
             style: TextStyle(fontSize: 28),
           ),
         );
+  }
+  Future createUser() async{
+
+    final db = FirebaseFirestore.instance.collection('usuarios/${itens.auth.usuario!.uid}/info').doc('Info');
+
+    final json = {
+      'nome': 'itens.user!.nome2',
+      'url': 'itens.user!.sobrenome2',
+    };
+    await db.set(json);
   }
 }

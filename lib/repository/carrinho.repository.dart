@@ -7,24 +7,16 @@ import 'package:flutter/material.dart';
 
 import '../dataBases/db.firestore.dart';
 import '../modelo/item.model.dart';
+import '../modelo/usuario.model.dart';
 import '../services/auth.service.dart';
 import 'Repository.control.dart';
 
 class CarrinhoRepository extends ChangeNotifier{
   List<Item> _item = [];
-  List<Item> _teste = [
-    Item(nome: "Garage Premium",
-      preco: 29,
-      urlAvatar: "https://c.pxhere.com/photos/13/fa/beef_bread_bun_burger_cheese_cheeseburger_close_up_delicious-1556149.jpg!d",
-      descricao: "",
-      quantidade : 1,
-    ),
-  ];
+  List<Item> _teste = [];
+  User? user;
   late FirebaseFirestore db;
   late AuthService auth;
-
-
-
 
   CarrinhoRepository({required this.auth}) {
     _startRepository();
@@ -105,7 +97,13 @@ class CarrinhoRepository extends ChangeNotifier{
         .doc(item.nome)
         .delete();
     _item.remove(item);
-    notifyListeners();
+
+  }
+
+  setNome(String nome,String sobrenome, ){
+    user!.nome = nome;
+    user!.sobrenome = sobrenome;
+
   }
 
 }
