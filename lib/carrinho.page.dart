@@ -25,7 +25,7 @@ class _CarrinhoPageState extends State<CarrinhoPage> {
     child: Scaffold(
       appBar: AppBar(
         title: Text(
-            "Carrinho"
+            "Carrinho de compra"
         ),
         //estilo do appbar
         flexibleSpace: Container(
